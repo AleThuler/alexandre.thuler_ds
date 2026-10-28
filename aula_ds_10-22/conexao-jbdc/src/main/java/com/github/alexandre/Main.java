@@ -11,7 +11,6 @@ public class Main {
 
         ConectorComBanco conectorComBanco = new ConectorComBanco("localhost", "3306", "banco_malvado", "root", "", "MySQL");
 
-
         conectorComBanco.conectarComOBanco();
 
         Connection objConexaoComBanco = conectorComBanco.getConexao();
@@ -54,8 +53,6 @@ public class Main {
             }
         }
 
-
-        gerenciadorDeDados.criarColunas();
 
         gerenciadorDeDados.encerrarOGerenciamento();
 

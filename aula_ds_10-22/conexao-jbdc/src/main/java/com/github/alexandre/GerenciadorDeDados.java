@@ -20,13 +20,13 @@ public class GerenciadorDeDados {
 
     public void criarTabela(String nomeDaTabela){
         colunasDaTabela = criarColunas();
-        instrucao = String.format("CREATE TABLE IF NOT EXISTS %s (%s)", nomeDaTabela, colunasDaTabela.substring(1, colunasDaTabela.length() - 1));
+        instrucao = String.format("CREATE TABLE IF NOT EXISTS %s (%s);", nomeDaTabela, colunasDaTabela.substring(1, colunasDaTabela.length() - 1));
 
         try {
             System.out.println("Iniciando criação da tabela");
             PreparedStatement preparedStatement = conexaoComOBanco.prepareStatement(instrucao);
             System.out.println(instrucao);
-            //preparedStatement.execute();
+            preparedStatement.execute();
             System.out.println("Tabela criada com sucesso");
 
         } catch (SQLException sqlException) {
@@ -42,7 +42,7 @@ public class GerenciadorDeDados {
             System.out.println("Iniciando a derrubada de tabela");
             PreparedStatement preparedStatement = conexaoComOBanco.prepareStatement(instrucao);
             System.out.println(instrucao);
-            //preparedStatement.execute();
+            preparedStatement.execute();
             System.out.println("Tabela derrubada com sucesso");
 
         } catch (SQLException sqlException){
@@ -52,19 +52,32 @@ public class GerenciadorDeDados {
     }
 
     public void atualizarTabela(String nomeDaTabela){
-        System.out.println(colunasDaTabela);
         System.out.println("Qual operação você vai fazer?");
         System.out.print("""
                 1 - ADD COLUMN
-                2- DROP COLUMN
+                2 - DROP COLUMN
                 3 - RENAME_COLUMN,
                 4 - MODIFY_COLUMN,
-                5 - RENAME_TABLE""");
+                5 - RENAME_TABLE
+                """);
 
         int escolhaDoUser = scanner.nextInt();
         scanner.nextLine();
 
-        System.out.println(atualizarTabela(nomeDaTabela, escolhaDoUser));
+        instrucao = gerarScriptDeAtualizcao(nomeDaTabela, escolhaDoUser);
+        System.out.println(instrucao);
+
+        try {
+            System.out.println("Inicando a atualização de tabela");
+            PreparedStatement preparedStatement = conexaoComOBanco.prepareStatement(instrucao);
+            preparedStatement.execute();
+            System.out.println("Atualização realizada com sucesso!");
+        } catch (SQLException sqlException){
+            System.out.println("Deu erro ao atualizar tabela");
+            sqlException.printStackTrace();
+        }
+
+
     }
 
     public String criarColunas(){
@@ -77,7 +90,6 @@ public class GerenciadorDeDados {
         ArrayList<String> colunasArray = new ArrayList<>();
 
         for (int contadorDoLoop = NumeroDeColunasDaTabela; contadorDoLoop > 0; contadorDoLoop--) {
-            StringBuilder coluna = new StringBuilder();
 
             System.out.println("Qual vai ser o nome da coluna?");
             String nomeDaColuna = scanner.nextLine();
@@ -86,9 +98,10 @@ public class GerenciadorDeDados {
                 colunasArray.add("id INT AUTO_INCREMENT PRIMARY KEY");
             }
 
-            colunasArray.add(switchEscolhaDeDado().toString());
+            String coluna = String.format("%s%s", nomeDaColuna, switchEscolhaDeDado().toString());
 
-            coluna.append(nomeDaColuna);
+            colunasArray.add(coluna);
+
         }
         return colunasArray.toString();
     }
@@ -182,7 +195,7 @@ public class GerenciadorDeDados {
 
     }
 
-    public String atualizarTabela(String nomeDaTabela, int escolhaDoUser){
+    public String gerarScriptDeAtualizcao(String nomeDaTabela, int escolhaDoUser){
         String nomeDaColuna;
         String tipoDaColuna;
 
@@ -193,14 +206,14 @@ public class GerenciadorDeDados {
 
                 tipoDaColuna = switchEscolhaDeDado().toString();
 
-                instrucao = String.format("ALTER %s ADD %s %s;", nomeDaTabela, nomeDaColuna, tipoDaColuna);
+                instrucao = String.format("ALTER TABLE %s ADD %s%s;", nomeDaTabela, nomeDaColuna, tipoDaColuna);
                 return instrucao;
 
             case 2:
                 System.out.println("Qual é o nome da coluna para derrubar?");
                 nomeDaColuna = scanner.nextLine();
 
-                instrucao = String.format("ALTER %s DROP COLUMN %s ;", nomeDaTabela ,nomeDaColuna);
+                instrucao = String.format("ALTER TABLE %s DROP COLUMN %s;", nomeDaTabela ,nomeDaColuna);
                 return instrucao;
 
             case 3:
@@ -210,7 +223,7 @@ public class GerenciadorDeDados {
                 System.out.println("Qual será o novo nome da nova coluna?");
                 String novoNomeDaColuna = scanner.nextLine();
 
-                instrucao = String.format("ALTER %s RENAME COLUMN %s TO %s;", nomeDaTabela, nomeDaColuna, novoNomeDaColuna);
+                instrucao = String.format("ALTER TABLE %s RENAME COLUMN %s TO %s;", nomeDaTabela, nomeDaColuna, novoNomeDaColuna);
                 return instrucao;
 
             case 4:
@@ -219,13 +232,13 @@ public class GerenciadorDeDados {
 
                 tipoDaColuna = switchEscolhaDeDado().toString();
 
-                instrucao = String.format("ALTER %s MODIFY COLUMN %s %s;", nomeDaTabela, nomeDaColuna, tipoDaColuna);
+                instrucao = String.format("ALTER TABLE %s MODIFY COLUMN %s%s;", nomeDaTabela, nomeDaColuna, tipoDaColuna);
                 return instrucao;
             case 5:
                 System.out.println("Qual será o nome da nova tabela?");
                 String inputDoUser = scanner.nextLine();
 
-                instrucao = String.format("ALTER TABLE %s RENAME TO %s ;", nomeDaTabela, inputDoUser);
+                instrucao = String.format("ALTER TABLE %s RENAME TO %s;", nomeDaTabela, inputDoUser);
                 return instrucao;
         }
         return "A";
