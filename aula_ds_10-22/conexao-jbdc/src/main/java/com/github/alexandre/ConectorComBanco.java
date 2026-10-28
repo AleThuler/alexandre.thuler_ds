@@ -14,19 +14,20 @@ public class ConectorComBanco {
     private String url;
 
     public ConectorComBanco(String server, String porta, String banco, String user, String senha, String linguagem) {
-        this.server = server;
-        this.porta = porta;
-        this.banco = banco;
-        this.user = user;
-        this.senha = senha;
-
         if (linguagem.equals("MySQL")){
             criarURLMySQL(server, porta, banco);
         } else if (linguagem.equals("MariaDB")){
             criarURLMariaDB(server, porta, banco);
         } else {
             System.out.println("Opção errada");
+            throw new RuntimeException("Não escolheu uma linguagem de programaão certa");
         }
+
+        this.server = server;
+        this.porta = porta;
+        this.banco = banco;
+        this.user = user;
+        this.senha = senha;
     }
 
     private void criarURLMySQL(String server, String porta, String banco){
@@ -48,7 +49,7 @@ public class ConectorComBanco {
         }
     }
 
-    public void fecharConexao (Connection conexao) {
+    public void fecharConexao(Connection conexao) {
         try {
             conexao.close();
         } catch (SQLException exception) {
@@ -56,11 +57,11 @@ public class ConectorComBanco {
         }
     }
 
+
+    // Getters
     public Connection getConexao(){
         return conexao;
     }
-
-
 
     // Setters
     public void setServer(String server) {
